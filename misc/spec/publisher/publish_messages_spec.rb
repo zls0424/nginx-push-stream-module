@@ -22,7 +22,7 @@ describe "Publisher Publishing Messages" do
           EventMachine.stop
         end
 
-        pub = EventMachine::HttpRequest.new(nginx_address + '/pub?id=' + channel.to_s ).post :head => headers, :body => body
+        publish_message_inline(channel, headers, body)
       end
     end
   end
@@ -39,7 +39,9 @@ describe "Publisher Publishing Messages" do
           EventMachine.stop
         end
 
-        pub = EventMachine::HttpRequest.new(nginx_address + '/pub?id=' + channel.to_s ).put :head => headers, :body => body, :timeout => 30
+        EM.add_timer(0.5) do
+          EventMachine::HttpRequest.new(nginx_address + '/pub?id=' + channel.to_s ).put :head => headers, :body => body, :timeout => 30
+        end
       end
     end
   end
@@ -71,7 +73,7 @@ describe "Publisher Publishing Messages" do
             EventMachine.stop
           end
 
-          pub = EventMachine::HttpRequest.new(nginx_address + '/pub?id=' + channel.to_s ).post :head => headers, :body => body
+          publish_message_inline(channel, headers, body)
         end
       end
     end
@@ -106,7 +108,7 @@ describe "Publisher Publishing Messages" do
           end
         end
 
-        pub = EventMachine::HttpRequest.new(nginx_address + '/pub?id=' + channel.to_s ).post :head => headers, :body => body
+        publish_message_inline(channel, headers, body)
       end
     end
   end
@@ -183,7 +185,7 @@ describe "Publisher Publishing Messages" do
           EventMachine.stop
         end
 
-        pub = EventMachine::HttpRequest.new(nginx_address + '/pub?id=' + channel.to_s ).post :head => headers.merge('Event-Id' => event_id), :body => body
+        publish_message_inline(channel, headers.merge('Event-Id' => event_id), body)
       end
     end
   end
@@ -206,7 +208,7 @@ describe "Publisher Publishing Messages" do
           EventMachine.stop
         end
 
-        pub = EventMachine::HttpRequest.new(nginx_address + '/pub?id=' + channel.to_s ).post :head => headers.merge('Event-type' => event_type), :body => body
+        publish_message_inline(channel, headers.merge('Event-type' => event_type), body)
       end
     end
   end
@@ -229,7 +231,7 @@ describe "Publisher Publishing Messages" do
           EventMachine.stop
         end
 
-        pub = EventMachine::HttpRequest.new(nginx_address + '/pub?id=' + channel.to_s ).post :head => headers.merge('Event-Ids' => event_id), :body => body
+        publish_message_inline(channel, headers.merge('Event-Ids' => event_id), body)
       end
 
       EventMachine.run do
@@ -243,7 +245,7 @@ describe "Publisher Publishing Messages" do
           EventMachine.stop
         end
 
-        pub = EventMachine::HttpRequest.new(nginx_address + '/pub?id=' + channel.to_s ).post :head => headers.merge('Event-I' => event_id), :body => body
+        publish_message_inline(channel, headers.merge('Event-I' => event_id), body)
       end
     end
   end
@@ -270,7 +272,7 @@ describe "Publisher Publishing Messages" do
         end
 
         now = Time.now
-        pub = EventMachine::HttpRequest.new(nginx_address + '/pub?id=' + channel.to_s ).post :head => headers, :body => body
+        publish_message_inline(channel, headers, body)
       end
     end
   end
@@ -299,8 +301,8 @@ describe "Publisher Publishing Messages" do
           EventMachine.stop
         end
 
-        pub = EventMachine::HttpRequest.new(nginx_address + '/pub?id=' + channel.to_s ).post :head => headers, :body => body
-        pub = EventMachine::HttpRequest.new(nginx_address + '/pub?id=' + channel.to_s ).post :head => headers, :body => body
+        publish_message_inline(channel, headers, body)
+        publish_message_inline(channel, headers, body)
       end
     end
   end
