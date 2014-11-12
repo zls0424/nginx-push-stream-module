@@ -249,7 +249,7 @@ ngx_http_push_stream_websocket_reading(ngx_http_request_t *r)
             ngx_http_push_stream_module_ctx_t *ctx = ngx_http_get_module_ctx(r, ngx_http_push_stream_module);
             for (q = ngx_queue_head(&ctx->subscriber->subscriptions); q != ngx_queue_sentinel(&ctx->subscriber->subscriptions); q = ngx_queue_next(q)) {
                 ngx_http_push_stream_subscription_t *subscription = ngx_queue_data(q, ngx_http_push_stream_subscription_t, queue);
-                if (ngx_http_push_stream_add_msg_to_channel(r, &subscription->channel->id, frame.payload, frame.payload_len, NULL, NULL, temp_pool) == NULL) {
+                if (ngx_http_push_stream_add_msg_to_channel(r, subscription->channel, frame.payload, frame.payload_len, NULL, NULL, temp_pool) != NGX_OK) {
                     ngx_http_finalize_request(r, NGX_OK);
                     ngx_destroy_pool(temp_pool);
                     return;
