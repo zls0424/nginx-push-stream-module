@@ -623,9 +623,7 @@ ngx_http_push_stream_assing_subscription_to_channel(ngx_slab_pool_t *shpool, ngx
     ngx_http_push_stream_pid_queue_t           *worker_subscribers_sentinel;
 
     ngx_shmtx_lock(channel->mutex);
-
-    worker_subscribers_sentinel = ngx_http_push_stream_get_worker_subscriber_channel_sentinel_locked(shpool, channel, log);
-    if (worker_subscribers_sentinel == NULL) {
+    if ((worker_subscribers_sentinel = ngx_http_push_stream_get_worker_subscriber_channel_sentinel_locked(shpool, channel, log)) == NULL) {
         ngx_shmtx_unlock(channel->mutex);
         return NGX_ERROR;
     }
