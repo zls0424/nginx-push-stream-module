@@ -1009,5 +1009,7 @@ ngx_http_push_stream_init_shm_zone(ngx_shm_zone_t *shm_zone, void *data)
 
     d->mutex_round_robin = 0;
 
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "push stream module: Trying branch 0.5.0-dev v1");
+
     return NGX_OK;
 }
