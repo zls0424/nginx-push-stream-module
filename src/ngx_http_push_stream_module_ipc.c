@@ -350,15 +350,18 @@ ngx_http_push_stream_census_worker_subscribers_data(ngx_http_push_stream_shm_dat
     }
 
     ngx_shmtx_lock(&shpool->mutex);
-
     data->slots_for_census--;
+    ngx_shmtx_unlock(&shpool->mutex);
+
     if (data->slots_for_census == 0) {
+        ngx_shmtx_lock(&shpool->mutex);
         data->subscribers = 0;
         for (i = 0; i < NGX_MAX_PROCESSES; i++) {
             if (data->ipc[i].pid > 0) {
                 data->subscribers += data->ipc[i].subscribers;
             }
         }
+        ngx_shmtx_unlock(&shpool->mutex);
 
         ngx_shmtx_lock(&data->channels_queue_mutex);
         for (q = ngx_queue_head(&data->channels_queue); q != ngx_queue_sentinel(&data->channels_queue); q = ngx_queue_next(q)) {
@@ -374,7 +377,7 @@ ngx_http_push_stream_census_worker_subscribers_data(ngx_http_push_stream_shm_dat
         ngx_shmtx_unlock(&data->channels_queue_mutex);
     }
 
-    ngx_shmtx_unlock(&shpool->mutex);
+
 }
 
 

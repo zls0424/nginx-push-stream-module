@@ -1310,7 +1310,6 @@ ngx_http_push_stream_worker_subscriber_cleanup(ngx_http_push_stream_subscriber_t
     ngx_slab_pool_t                         *shpool = mcf->shpool;
     ngx_queue_t                             *cur;
 
-    ngx_shmtx_lock(&shpool->mutex);
     while (!ngx_queue_empty(&worker_subscriber->subscriptions)) {
         cur = ngx_queue_head(&worker_subscriber->subscriptions);
         ngx_http_push_stream_subscription_t *subscription = ngx_queue_data(cur, ngx_http_push_stream_subscription_t, queue);
@@ -1322,6 +1321,7 @@ ngx_http_push_stream_worker_subscriber_cleanup(ngx_http_push_stream_subscriber_t
         ngx_shmtx_unlock(subscription->channel->mutex);
     }
 
+    ngx_shmtx_lock(&shpool->mutex);
     ngx_queue_remove(&worker_subscriber->worker_queue);
     NGX_HTTP_PUSH_STREAM_DECREMENT_COUNTER(data->subscribers);
     NGX_HTTP_PUSH_STREAM_DECREMENT_COUNTER(data->ipc[ngx_process_slot].subscribers);
