@@ -494,7 +494,9 @@ ngx_http_push_stream_broadcast(ngx_http_push_stream_channel_t *channel, ngx_http
 static ngx_int_t
 ngx_http_push_stream_respond_to_subscribers(ngx_http_push_stream_channel_t *channel, ngx_queue_t *subscriptions, ngx_http_push_stream_msg_t *msg)
 {
-    ngx_queue_t      *q;
+    ngx_queue_t         *q;
+    ngx_http_request_t  *r;
+    ngx_connection_t    *c;
 
     if (subscriptions == NULL) {
         return NGX_ERROR;
@@ -507,22 +509,27 @@ ngx_http_push_stream_respond_to_subscribers(ngx_http_push_stream_channel_t *chan
             ngx_http_push_stream_subscription_t *subscription = ngx_queue_data(q, ngx_http_push_stream_subscription_t, channel_worker_queue);
             q = ngx_queue_next(q);
             ngx_http_push_stream_subscriber_t *subscriber = subscription->subscriber;
-            if (subscriber->longpolling) {
-                ngx_http_push_stream_add_polling_headers(subscriber->request, msg->time, msg->tag, subscriber->request->pool);
-                ngx_http_send_header(subscriber->request);
 
-                ngx_http_push_stream_send_response_content_header(subscriber->request, ngx_http_get_module_loc_conf(subscriber->request, ngx_http_push_stream_module));
-                ngx_http_push_stream_send_response_message(subscriber->request, channel, msg, 1, 0);
-                ngx_http_push_stream_send_response_finalize(subscriber->request);
+            r = subscriber->request;
+            c = r->connection;
+            if (subscriber->longpolling) {
+                ngx_http_push_stream_add_polling_headers(r, msg->time, msg->tag, r->pool);
+                ngx_http_send_header(r);
+
+                ngx_http_push_stream_send_response_content_header(r, ngx_http_get_module_loc_conf(r, ngx_http_push_stream_module));
+                ngx_http_push_stream_send_response_message(r, channel, msg, 1, 0);
+                ngx_http_push_stream_send_response_finalize(r);
             } else {
-                if (ngx_http_push_stream_send_response_message(subscriber->request, channel, msg, 0, 0) != NGX_OK) {
-                    ngx_http_push_stream_send_response_finalize(subscriber->request);
+                if (ngx_http_push_stream_send_response_message(r, channel, msg, 0, 0) != NGX_OK) {
+                    ngx_http_push_stream_send_response_finalize(r);
                 } else {
-                    ngx_http_push_stream_module_ctx_t     *ctx = ngx_http_get_module_ctx(subscriber->request, ngx_http_push_stream_module);
-                    ngx_http_push_stream_loc_conf_t       *pslcf = ngx_http_get_module_loc_conf(subscriber->request, ngx_http_push_stream_module);
+                    ngx_http_push_stream_module_ctx_t     *ctx = ngx_http_get_module_ctx(r, ngx_http_push_stream_module);
+                    ngx_http_push_stream_loc_conf_t       *pslcf = ngx_http_get_module_loc_conf(r, ngx_http_push_stream_module);
                     ngx_http_push_stream_timer_reset(pslcf->ping_message_interval, ctx->ping_timer);
                 }
             }
+
+            ngx_http_run_posted_requests(c);
         }
     }
 

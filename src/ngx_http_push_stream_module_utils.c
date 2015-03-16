@@ -1297,6 +1297,7 @@ static void
 ngx_http_push_stream_disconnect_timer_wake_handler(ngx_event_t *ev)
 {
     ngx_http_request_t                    *r = (ngx_http_request_t *) ev->data;
+    ngx_connection_t                      *c = r->connection;
     ngx_http_push_stream_module_ctx_t     *ctx = ngx_http_get_module_ctx(r, ngx_http_push_stream_module);
 
     if (ctx->longpolling) {
@@ -1304,6 +1305,8 @@ ngx_http_push_stream_disconnect_timer_wake_handler(ngx_event_t *ev)
     } else {
         ngx_http_push_stream_send_response_finalize(r);
     }
+
+    ngx_http_run_posted_requests(c);
 }
 
 static void
